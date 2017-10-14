@@ -21,6 +21,7 @@
             android:name="ch.hsr.mge.wordcount.view.WordListActivity"
             android:label="@string/app_name"
             android:parentActivityName="ch.hsr.mge.wordcount.view.FileActivity"/>
+        <service android:name="ch.hsr.mge.wordcount.domain.WordCountService" />
     </application>
 
 </manifest>

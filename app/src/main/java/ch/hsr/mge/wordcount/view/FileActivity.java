@@ -14,24 +14,19 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.List;
 
 import ch.hsr.mge.wordcount.R;
 import ch.hsr.mge.wordcount.data.FileHolder;
 import ch.hsr.mge.wordcount.data.FileProvider;
-import ch.hsr.mge.wordcount.data.WordCount;
-import ch.hsr.mge.wordcount.data.WordCountResult;
-import ch.hsr.mge.wordcount.domain.WordCounter;
+import ch.hsr.mge.wordcount.domain.WordCountService;
 
 public class FileActivity extends AppCompatActivity {
 
     public final static String DEBUG_TAG = "WordApp";
     public final static String KEY_WORD_RESULT = "WordResult";
+    public final static String KEY_FILE_HOLDER = "FileHolder";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,59 +57,15 @@ public class FileActivity extends AppCompatActivity {
     }
 
     private void fileSelected(FileHolder holder) {
-        Toast.makeText(getApplicationContext(),
-                "File selected: " + holder.filename, Toast.LENGTH_SHORT)
-                .show();
-
-        String text = loadFile(holder.id);
-        List<WordCount> counters = analyzeText(text);
-        WordCountResult result = new WordCountResult(holder, counters);
-
-        Intent showResultIntent = new Intent(this, WordListActivity.class);
+        Intent intent = new Intent(this, WordCountService.class);
         Bundle bundle = new Bundle();
-        bundle.putSerializable(KEY_WORD_RESULT, result);
-        showResultIntent.putExtras(bundle);
+        bundle.putSerializable(KEY_FILE_HOLDER, holder);
+        intent.putExtras(bundle);
 
-        startActivity(showResultIntent);
+        startService(intent);
+
+        Log.d(DEBUG_TAG, "serviceStarted()");
     }
-
-    /**
-     * Laedt die Datei und liefert den Inhalt als String.
-     */
-    private String loadFile(int id) {
-        InputStream in = getResources().openRawResource(id);
-        BufferedReader br = new BufferedReader(new InputStreamReader(in));
-        String readLine = null;
-        StringBuilder out = new StringBuilder();
-
-        try {
-            while ((readLine = br.readLine()) != null) {
-                out.append(readLine);
-            }
-            in.close();
-            br.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        String text = out.toString();
-
-        Log.d(DEBUG_TAG, "File loaded size=" + text.length());
-
-        return text;
-    }
-
-    /**
-     * Trennt den Text und zaehlt die Anzahl Worte.
-     *
-     * @param text
-     */
-    private List<WordCount> analyzeText(String text) {
-        List<WordCount> result = new WordCounter().countWords(text);
-        Log.d(DEBUG_TAG, "File analyzed");
-        return result;
-    }
-
 
     /**
      * Adapter, um die ListView mit Daten zu bestuecken.
